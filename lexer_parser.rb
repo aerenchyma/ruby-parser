@@ -32,10 +32,28 @@ def lex_input(input)
   tokens
 end
 
+
+def multdiv_helper(input, newval) # could take block with diff structure
+  # assumes valid input, errors handled outside
+  multdiv = [:times, :div]
+  while !input.empty? && multdiv.include?(input[0].type)
+    new_op = input.shift
+    next_num = input.shift
+    if new_op.type == :times
+      newval *= next_num.value
+    elsif new_op.type == :div
+      newval /= next_num.value
+    end  
+  end
+  newval
+end
+      
+
+
 def parse_expression(input)
   muldiv = [:times,:div]
-  plusmin = [:plus, :minus]
-  num = input.shift
+  plusmin = [:plus, :minus] # not yet used, may delete
+  num = input.shift 
   unless num.type == :number
     raise "Syntax error, expecting number"
   end
@@ -46,43 +64,40 @@ def parse_expression(input)
     
     op = input.shift
     n = input.shift
-    next_op = input.shift
-    foll_num = input.shift
-    newval = nil # placeholder
-    # taking off four in a row, basically
-    # if the following operator isn't higher precedence than the first, reshift the latter two
-    
-    if ![:plus, :minus, :times, :div].include?(op.type) || ![:plus, :minus, :times, :div].include?(next_op.type)
+    newval = n.value # essentially placeholder
+
+    if ![:plus, :minus, :times, :div].include?(op.type) 
       raise "Syntax error: expecting operator, got #{op.type}"
-    elsif ( !n || n.type != :number) || ((next_op && !foll_num) || (next_op && foll_num.type != :number))
-      raise "Syntax error: expected number, got invalid input" # TODO-specify
+    elsif !n || n.type != :number
+      raise "Syntax error: expected number, got invalid input"
     elsif op.type == :times
-      total *= n.value
+        total *= n.value
     elsif op.type == :div
       total /= n.value
-    elsif next_op.type == :times
-      newval = n.value * foll_num.value
-    elsif next_op.type == :div
-      newval = n.value/foll_num.value
-    elsif !muldiv.include?(next_op.type)
-      input.unshift(foll_num)
-      input.unshift(next_op)
+    elsif input[1] 
+      if input[1].type == :number && muldiv.include?(input[0].type)
+        newval = multdiv_helper(input,newval)  
+      elsif input[0].type != :number 
+        raise "Syntax error: expected number, got invalid input" # TODO-fix code duplication problem
+      end
+    else
+      newval = n.value
     end
-
+      
     if op.type == :plus
       total += newval
     elsif op.type == :minus
       total -= newval
     end
-    
-    
   end
   total
 end
 
-# doesn't work for div and mult in a row yet
 
-tokens = lex_input("    1 - 6 / 2 * 3 ") 
-p tokens
+
+# CODE/tests
+
+tokens = lex_input("    1 -  6  / /2 * 3 * 4 / 2 ")
+#p tokens
 
 puts parse_expression(tokens)
