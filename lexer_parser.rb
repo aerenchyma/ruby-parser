@@ -43,9 +43,6 @@ def parse_expression(input)
   return total if input.empty?
   
   while !input.empty?
-
-    
-    
     
     op = input.shift
     n = input.shift
@@ -83,8 +80,9 @@ def parse_expression(input)
   total
 end
 
+# doesn't work for div and mult in a row yet
 
-tokens = lex_input("    1 + 6 / 2 ") 
+tokens = lex_input("    1 - 6 / 2 * 3 ") 
 p tokens
 
 puts parse_expression(tokens)
