@@ -12,9 +12,12 @@ def lex_input(input)
       num = $1
       input = input.sub(num, '')
       tokens << Token.new(:number, num.to_i)
-    elsif input =~ /^\+/
+    elsif input =~ /^\+/ 
       input = input[1..-1]
       tokens << Token.new(:plus, nil)
+    elsif input =~ /^-/
+      input = input[1..-1]
+      tokens << Token.new(:minus, nil)
     elsif input =~ /^(\s+)/
       input = input.sub($1, '')
     else
@@ -25,22 +28,32 @@ def lex_input(input)
 end
 
 def parse_expression(input)
-  
   num = input.shift
   unless num.type == :number
     raise "Syntax error, expecting number"
   end
+  sum = num.value
+  return sum if input.empty?
   
-  return num.value if input.empty?
-  
-  op = input.shift
-  if op.type != :plus
-    raise "Syntax error: expecting plus"
+  while !input.empty?
+    op = input.shift
+    n = input.shift
+    
+   # if op.type != :plus && op.type != :minus
+    if ![:plus, :minus].include?(op.type)
+      raise "Syntax error: expecting operator, got #{op.value}"
+    elsif !n || n.type != :number
+      raise "Syntax error: expected number, got #{n ? n.type : 'nothing'}"
+    elsif op.type == :plus
+      sum += n.value
+    elsif op.type == :minus
+      sum -= n.value
+    end
   end
-  num.value + parse_expression(input)
+  sum
 end
 
 
-
-tokens = lex_input("    1 + 3 + 2     +7    ") # answer should be 13
+tokens = lex_input("    1 - 3 + 2  +9  + 7  ") 
+#p tokens
 puts parse_expression(tokens)
