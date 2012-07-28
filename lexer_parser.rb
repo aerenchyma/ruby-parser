@@ -58,7 +58,7 @@ def parse_expression(input)
     if ![:plus, :minus, :times, :div].include?(op.type) || ![:plus, :minus, :times, :div].include?(next_op.type)
       raise "Syntax error: expecting operator, got #{op.type}"
     elsif ( !n || n.type != :number) || ((next_op && !foll_num) || (next_op && foll_num.type != :number))
-      raise "Syntax error: expected number, got invalid input" # later specify
+      raise "Syntax error: expected number, got invalid input" # TODO-specify
     elsif op.type == :times
       total *= n.value
     elsif op.type == :div
