@@ -97,7 +97,10 @@ end
 
 # CODE/tests
 
-tokens = lex_input("    1 -  6  / /2 * 3 * 4 / 2 ")
+#input_string = gets.chomp!  # input expression via keyboard
+#tokens = lex_input(input_string)
+
+tokens = lex_input("    1 -  6   /2 * 3 * 4 / 2 ")
 #p tokens
 
 puts parse_expression(tokens)
