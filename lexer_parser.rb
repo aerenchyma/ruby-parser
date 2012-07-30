@@ -33,8 +33,8 @@ def lex_input(input)
 end
 
 
-def multdiv_helper(input, newval) # could take block with diff structure
-  # assumes valid input, errors handled outside
+def multdiv_helper(input, newval) 
+  # assumes valid input
   multdiv = [:times, :div]
   while !input.empty? && multdiv.include?(input[0].type)
     new_op = input.shift
@@ -52,7 +52,6 @@ end
 
 def parse_expression(input)
   muldiv = [:times,:div]
-  plusmin = [:plus, :minus] # not yet used, may delete
   num = input.shift 
   unless num.type == :number
     raise "Syntax error, expecting number"
@@ -64,7 +63,7 @@ def parse_expression(input)
     
     op = input.shift
     n = input.shift
-    newval = n.value # essentially placeholder
+    newval = n.value 
 
     if ![:plus, :minus, :times, :div].include?(op.type) 
       raise "Syntax error: expecting operator, got #{op.type}"
@@ -78,7 +77,7 @@ def parse_expression(input)
       if input[1].type == :number && muldiv.include?(input[0].type)
         newval = multdiv_helper(input,newval)  
       elsif input[0].type != :number 
-        raise "Syntax error: expected number, got invalid input" # TODO-fix code duplication problem
+        raise "Syntax error: expected number, got invalid input" 
       end
     else
       newval = n.value
@@ -97,7 +96,7 @@ end
 
 # CODE/tests
 
-#input_string = gets.chomp!  # input expression via keyboard
+#input_string = gets.chomp!  
 #tokens = lex_input(input_string)
 
 tokens = lex_input("    1 -  6   /2 * 3 * 4 / 2 ")
