@@ -46,14 +46,14 @@ def parse_sum(input) # for sum
   
   while !input.empty?
     
-    op = input[0] # looking at next token
+    op = input[0] # looking at next token(s)
     n = input[1]
     
     if !$operators.include?(op.type)
       #puts $operators
       raise "Syntax error: expecting operator, got #{op.type}"
     elsif !n || n.type != :number
-      raise "Syntax error: expecting number, got #{n ? n.type : "nothing"}" # check syntax
+      raise "Syntax error: expecting number, got #{n ? n.type : "nothing"}" 
     elsif op.type == :plus
       input.shift # eat plus/minus op
       sum += parse_product(input)
@@ -82,15 +82,13 @@ def parse_product(input)
   while !input.empty? && !$plusmin.include?(input[0].type) # this check could be more elegant
     n_op = input[0] # check -- peek at next values
     next_num = input[1]
-    if !$operators.include?(n_op.type) # needed?
+    if !$operators.include?(n_op.type)
       raise "Syntax error, expecting operator, got #{n_op.type}"
     elsif next_num.type != :number
       raise "Syntax error, expecting number, got #{next_num.type}"
     elsif n_op.type == :times
       product *= next_num.value
-      puts "first input, #{input}"
       input.shift(2)
-      puts "input now, #{input}"
     elsif n_op.type == :div
       product /= next_num.value
       input.shift(2)
