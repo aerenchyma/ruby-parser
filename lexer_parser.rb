@@ -4,6 +4,10 @@ class Token < Struct.new(:type, :value)
   end
 end
 
+$operators = [:times, :div, :plus, :minus]
+$muldiv = [:times, :div]
+$plusmin = [:plus, :minus]
+
 def lex_input(input)
   tokens = []
   while input.length > 0
@@ -32,78 +36,73 @@ def lex_input(input)
   tokens
 end
 
-def multdiv_helper(input, newval) # mishandling operator without final number
-  # assumes valid input -- maybe shouldn't
-  multdiv = [:times, :div]
-  while !input.empty? && multdiv.include?(input[0].type)
-    new_op = input.shift
-    next_num = input.shift
-    if next_num && next_num.type == :number # with first check it accepts invalid input with trailing operator, with both it breaks but not my error
-      if new_op.type == :times
-        newval *= next_num.value
-      elsif new_op.type == :div
-        newval /= next_num.value
-      end  
-    end
-  end
-  input.shift(3) # -- yet with the shift in this line, no fix (see comment below fxn)
-  return newval
-end
-# potential problem: it stops shifting, no longer a stream, breaks when it's wrong the wrong way 
-
-
-def parse_expression(input)
-  muldiv = [:times,:div]
-  num = input.shift 
+def parse_sum(input) # for sum
+  num = input[0]
   unless num.type == :number
     raise "Syntax error, expecting number"
   end
-  total = num.value
-  return total if input.empty?
+  sum = input.shift.value
+  return sum if input.empty?
   
   while !input.empty?
     
-    op = input.shift
-    n = input.shift
-    newval = n.value 
-
-    if ![:plus, :minus, :times, :div].include?(op.type) 
+    op = input[0] # looking at next token
+    n = input[1]
+    
+    if !$operators.include?(op.type)
+      #puts $operators
       raise "Syntax error: expecting operator, got #{op.type}"
     elsif !n || n.type != :number
-      raise "Syntax error: expected number, got invalid input"
-    elsif op.type == :times
-        total *= n.value
-    elsif op.type == :div
-      total /= n.value
-    # begin peeking (and nesting)
-    elsif input[1]
-      #p input
-      if input[1].type == :number && muldiv.include?(input[0].type) # first check here not correct...
-        newval, input = multdiv_helper(input,newval)  
-      elsif input[0].type != :number 
-        raise "Syntax error: expected number, got invalid input" 
-      end
-    else
-      newval = n.value
-    end
-    
-    if op.type == :plus
-      total += newval
+      raise "Syntax error: expecting number, got #{n ? n.type : "nothing"}" # check syntax
+    elsif op.type == :plus
+      input.shift # eat plus/minus op
+      sum += parse_product(input)
     elsif op.type == :minus
-      total -= newval
+      input.shift # eat plus/minus op
+      sum -= parse_product(input)
+    elsif $muldiv.include?(op.type)
+      input.unshift(num) # bad plan?
+      sum += parse_product(input)
     end
   end
-  total
+  sum
+end
+
+
+def parse_product(input)
+  n = input.shift
+  
+  unless n.type == :number
+    raise "Syntax error, expecting number, got #{input[0].type}"
+  end
+  
+  product = n.value
+  return product if input.empty?
+  
+  while !input.empty? && !$plusmin.include?(input[0].type) # this check could be more elegant
+    n_op = input[0] # check -- peek at next values
+    next_num = input[1]
+    if !$operators.include?(n_op.type) # needed?
+      raise "Syntax error, expecting operator, got #{n_op.type}"
+    elsif next_num.type != :number
+      raise "Syntax error, expecting number, got #{next_num.type}"
+    elsif n_op.type == :times
+      product *= next_num.value
+      puts "first input, #{input}"
+      input.shift(2)
+      puts "input now, #{input}"
+    elsif n_op.type == :div
+      product /= next_num.value
+      input.shift(2)
+    end
+  end
+  product
 end
 
 
 
-# CODE/tests
-
-#input_string = gets.chomp!  
-#tokens = lex_input(input_string)
-
-tokens = lex_input("    1 -  6  /2 + * 3 * 4 /  ")
-#p tokens
-
-puts parse_expression(tokens)
+# code
+      
+tokens = lex_input("2+3*2*4 -6") 
+puts parse_sum(tokens)   
+    
