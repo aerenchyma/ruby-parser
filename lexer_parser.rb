@@ -4,9 +4,10 @@ class Token < Struct.new(:type, :value)
   end
 end
 
-$operators = [:times, :div, :plus, :minus]
+$operators = [:times, :div, :plus, :minus, :exp]
 $muldiv = [:times, :div]
 $plusmin = [:plus, :minus]
+$other_ops = [:exp]
 
 def lex_input(input)
   tokens = []
@@ -15,6 +16,9 @@ def lex_input(input)
       num = $1
       input = input.sub(num, '')
       tokens << Token.new(:number, num.to_i)
+    elsif input =~ /^\^/
+      input = input[1..-1]
+      tokens << Token.new(:exp, nil)
     elsif input =~ /^\*/
       input = input[1..-1]
       tokens << Token.new(:times, nil)
@@ -53,7 +57,7 @@ def parse_sum(input) # for sum
       #puts $operators
       raise "Syntax error: expecting operator, got #{op.type}"
     elsif !n || n.type != :number
-      raise "Syntax error: expecting number, got #{n ? n.type : "nothing"}" # check syntax
+      raise "Syntax error: expecting number, got #{n ? n.type : "nothing"}" 
     elsif op.type == :plus
       input.shift # eat plus/minus op
       sum += parse_product(input)
@@ -61,7 +65,7 @@ def parse_sum(input) # for sum
       input.shift # eat plus/minus op
       sum -= parse_product(input)
     elsif $muldiv.include?(op.type)
-      input.unshift(num) # bad plan?
+      input.unshift(num) # hmm
       sum += parse_product(input)
     end
   end
@@ -87,16 +91,38 @@ def parse_product(input)
     elsif next_num.type != :number
       raise "Syntax error, expecting number, got #{next_num.type}"
     elsif n_op.type == :times
-      product *= next_num.value
+      product *= parse_exponent(input)
       puts "first input, #{input}"
       input.shift(2)
       puts "input now, #{input}"
     elsif n_op.type == :div
-      product /= next_num.value
+      product /= parse_exponent(input)
       input.shift(2)
     end
   end
   product
+end
+
+
+def parse_exponent(input)
+  n = input.shift
+  
+  unless n.type == :number
+    raise "Syntax error: expecting number"
+  end
+  
+  exp = n.value
+  return n if input.empty?
+  
+  e_op = input.shift # intended to pick up and eat ^ op
+  if !e_op || !$operators.include?(e_op.type)
+    raise "Syntax error: expecting operator, found #{e_op ? e_op.type : "nothing"}"
+  elsif input.empty? || input[0].type != :number
+    raise "Syntax error: expecting number, got #{input[0] ? input[0].type : "nothing"}"
+  elsif e_op.type == :exp
+    n_num = input.shift
+  end
+  exp ** parse_exponent(input) # this fxn fully recursive
 end
 
 
