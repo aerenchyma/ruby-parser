@@ -105,4 +105,9 @@ end
       
 tokens = lex_input("2+3*2*4 -6") 
 puts parse_sum(tokens)   
+
+
+### GRAMMAR
+## sum: product {('+' | '-') product}*
+## product: NUM {('*'|'/') NUM}*
     
