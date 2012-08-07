@@ -5,6 +5,7 @@ class Token < Struct.new(:type, :value)
 end
 
 $operators = [:times, :div, :plus, :minus, :exp]
+$regops = [:times, :div, :plus, :minus]
 $muldiv = [:times, :div]
 $plusmin = [:plus, :minus]
 $other_ops = [:exp]
@@ -81,7 +82,7 @@ def parse_product(input)
   end
   
   product = n.value
-  return product if input.empty?
+  return parse_exponent(product) if input.empty? # ? make sure p_e is end-rule
   
   while !input.empty? && !$plusmin.include?(input[0].type) # this check could be more elegant
     n_op = input[0] # check -- peek at next values
@@ -91,11 +92,13 @@ def parse_product(input)
     elsif next_num.type != :number
       raise "Syntax error, expecting number, got #{next_num.type}"
     elsif n_op.type == :times
+      #input.unshift(n) # here and in div -- if it's muldiv, need to shift number back on so the 'lowest' (highest) value can be eval'd
       product *= parse_exponent(input)
-      puts "first input, #{input}"
+     # puts "first input, #{input}"
       input.shift(2)
-      puts "input now, #{input}"
+     # puts "input now, #{input}"
     elsif n_op.type == :div
+    #  input.unshift(n)
       product /= parse_exponent(input)
       input.shift(2)
     end
@@ -108,21 +111,25 @@ def parse_exponent(input)
   n = input.shift
   
   unless n.type == :number
-    raise "Syntax error: expecting number"
+    p n
+    raise "Syntax error: expecting number!"
   end
   
   exp = n.value
-  return n if input.empty?
+  return exp if input.empty? || !$regops.include?(input[0])
   
-  e_op = input.shift # intended to pick up and eat ^ op
+  e_op = input[0] # intended to pick up and eat ^ op
   if !e_op || !$operators.include?(e_op.type)
     raise "Syntax error: expecting operator, found #{e_op ? e_op.type : "nothing"}"
   elsif input.empty? || input[0].type != :number
     raise "Syntax error: expecting number, got #{input[0] ? input[0].type : "nothing"}"
-  elsif e_op.type == :exp
-    n_num = input.shift
+  # elsif $muldiv.include?(e_op.type) || $plusmin.include?(e_op.type)
+  #    return exp
+  # elsif e_op.type == :exp
+  #n_num = input.shift
+ 
   end
-  exp ** parse_exponent(input) # this fxn fully recursive
+  exp ** parse_exponent(input) # this fxn fully recursive IDEALLY
 end
 
 
@@ -130,6 +137,7 @@ end
 # code
       
 tokens = lex_input("2+3*2*4 -6") 
+p tokens
 puts parse_sum(tokens)   
 
 
