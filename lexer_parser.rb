@@ -110,35 +110,6 @@ end
 
 
 def parse_exponent(input)
-  n = input[0]
-  puts "n is #{n}"
-  unless n.type == :number
-    raise "Syntax error, expecting number, got #{n.type}"
-  end
-  
-  exp = n.value
-  return exp if input.empty? || $other_ops.include?(input[0])
-  puts "GOT PAST, input is #{input}" ## k, now inf loop is here
-  next_op = input.shift
-  #n_num = input.shift
-  
-  if !$operators.include?(next_op.type) # must be a next op if input wasn't empty
-    raise "Syntax error, expecting operator, got #{next_op.value}"
-  elsif !input[0] || input[0].type != :number
-    raise "Syntax error, expecting number"
-  elsif !$other_ops.include?(next_op.type) ## the default case, as it were
-    #input.shift # eat ^ operator
-    n_num = input.shift
-    exp = exp ** n_num.value
-  #elsif $regops.include?(next_op.type)
-    #puts "entered other ops if"
-    # send it back to parse_product, and up the tree as needed
-    # so, return the number
-    #parse_exponent(input) ## hmmmm ?? how to properly recurse
-  end
-  input.unshift(n_num)
-  #input.unshift(n) # put it back for input
-  parse_exponent(input)
 end
 
 
