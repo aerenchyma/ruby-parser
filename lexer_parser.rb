@@ -62,7 +62,7 @@ def parse_sum(input) # for sum
       sum -= parse_product(input)
     elsif $muldiv.include?(op.type)
       input.unshift(num) # bad plan?
-      sum += parse_product(input)
+      sum = parse_product(input)
     end
   end
   sum
@@ -101,7 +101,7 @@ end
 
 # code
       
-tokens = lex_input("3*2*4 -6") 
+tokens = lex_input("4-  2*3*4") 
 puts parse_sum(tokens)   
 
 
