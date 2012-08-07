@@ -93,11 +93,16 @@ def parse_product(input)
     elsif next_num.type != :number # what happens if there is none?
       raise "Syntax error, expecting number, got #{next_num.type}"
     elsif n_op.type == :times
-      product *= next_num.value
-      input.shift(2)
+      puts "HERE IT IS, #{input}"
+      #product *= next_num.value
+      input.shift
+      product *= parse_exponent(input)
+      #input.shift(2)
     elsif n_op.type == :div
-      product /= next_num.value
-      input.shift(2)
+      input.shift
+      #product /= next_num.value
+      product /= parse_exponent(input)
+      #input.shift(2)
     end
   end
   product
@@ -105,31 +110,35 @@ end
 
 
 def parse_exponent(input)
-  n = input.shift
-  
+  n = input[0]
+  puts "n is #{n}"
   unless n.type == :number
     raise "Syntax error, expecting number, got #{n.type}"
   end
   
   exp = n.value
-  return exp if input.empty?
-  
+  return exp if input.empty? || $other_ops.include?(input[0])
+  puts "GOT PAST, input is #{input}" ## k, now inf loop is here
   next_op = input.shift
-  n_num = input.shift
+  #n_num = input.shift
   
   if !$operators.include?(next_op.type) # must be a next op if input wasn't empty
-    raise "Syntax error, expecting operator"
-  elsif !n_num || n_num.type != :number
+    raise "Syntax error, expecting operator, got #{next_op.value}"
+  elsif !input[0] || input[0].type != :number
     raise "Syntax error, expecting number"
   elsif !$other_ops.include?(next_op.type) ## the default case, as it were
-    exp = exp ** n_num
-  elsif $regops.include?(next_op.type)
+    #input.shift # eat ^ operator
+    n_num = input.shift
+    exp = exp ** n_num.value
+  #elsif $regops.include?(next_op.type)
+    #puts "entered other ops if"
     # send it back to parse_product, and up the tree as needed
     # so, return the number
-    parse_exponent(input)
-  else
-    "This should never print"
+    #parse_exponent(input) ## hmmmm ?? how to properly recurse
   end
+  input.unshift(n_num)
+  #input.unshift(n) # put it back for input
+  parse_exponent(input)
 end
 
 
