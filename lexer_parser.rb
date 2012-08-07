@@ -75,34 +75,32 @@ end
 
 
 def parse_product(input)
-  n = input[0]
+  n = input.shift
   
   unless n.type == :number
     raise "Syntax error, expecting number, got #{input[0].type}"
   end
   
   product = n.value
-  input.shift # so, if it's only one long, now empty -- inp now starts with operator if continues
   return product if input.empty?
   
-  while !input.empty? && !$plusmin.include?(input[0].type) 
+  while !input.empty? && !$plusmin.include?(input[0].type) # this check could be more elegant
     n_op = input[0] # check -- peek at next values
-    next_num = input[1] # what if this doesn't exist?
+    next_num = input[1]
     if !$operators.include?(n_op.type)
       raise "Syntax error, expecting operator, got #{n_op.type}"
-    elsif next_num.type != :number # what happens if there is none?
+    elsif next_num.type != :number
       raise "Syntax error, expecting number, got #{next_num.type}"
     elsif n_op.type == :times
-      puts "HERE IT IS, #{input}"
-      #product *= next_num.value
-      input.shift
-      product *= parse_exponent(input)
-      #input.shift(2)
+      product *= parse_exponent(input.shift(2))
+      
+      # product *= next_num.value
+      #      input.shift(2)
     elsif n_op.type == :div
-      input.shift
-      #product /= next_num.value
-      product /= parse_exponent(input)
-      #input.shift(2)
+      product /= parse_exponent(input.shift(2))
+      
+      # product /= next_num.value
+      #     input.shift(2)
     end
   end
   product
@@ -110,6 +108,17 @@ end
 
 
 def parse_exponent(input)
+  n = input.shift
+  n_op = input.shift
+  
+  unless n.type == :number
+    raise "Syntax error: expecting number, got #{n : n.type ? "nothing"}"
+  end
+  
+  return exp if (input.empty? || $regops.include?(n_op.type))
+  
+  if 
+  
 end
 
 
@@ -119,7 +128,7 @@ end
     # infinite loop  
       
     
-tokens = lex_input("2+3*2*4^2 -6") 
+tokens = lex_input("2+3*2 *4 -6") 
 p tokens
 puts parse_sum(tokens)   
 
