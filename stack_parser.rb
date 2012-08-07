@@ -1,7 +1,5 @@
 # lexer and parser separate
-# language with literal numbers and one binary operator ('+')
-
-# thanks to David Albert & Jason Laster
+# stack parser
 
 require 'rubygems'
 require 'pry'
