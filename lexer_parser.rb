@@ -75,31 +75,28 @@ end
 
 
 def parse_product(input)
-  n = input.shift
+  n = input[0]
   
   unless n.type == :number
     raise "Syntax error, expecting number, got #{input[0].type}"
   end
   
   product = n.value
-  return parse_exponent(product) if input.empty? # ? make sure p_e is end-rule
+  input.shift # so, if it's only one long, now empty -- inp now starts with operator if continues
+  return product if input.empty?
   
-  while !input.empty? && !$plusmin.include?(input[0].type) # this check could be more elegant
+  while !input.empty? && !$plusmin.include?(input[0].type) 
     n_op = input[0] # check -- peek at next values
-    next_num = input[1]
-    if !$operators.include?(n_op.type) # needed?
+    next_num = input[1] # what if this doesn't exist?
+    if !$operators.include?(n_op.type)
       raise "Syntax error, expecting operator, got #{n_op.type}"
-    elsif next_num.type != :number
+    elsif next_num.type != :number # what happens if there is none?
       raise "Syntax error, expecting number, got #{next_num.type}"
     elsif n_op.type == :times
-      #input.unshift(n) # here and in div -- if it's muldiv, need to shift number back on so the 'lowest' (highest) value can be eval'd
-      product *= parse_exponent(input)
-     # puts "first input, #{input}"
+      product *= next_num.value
       input.shift(2)
-     # puts "input now, #{input}"
     elsif n_op.type == :div
-    #  input.unshift(n)
-      product /= parse_exponent(input)
+      product /= next_num.value
       input.shift(2)
     end
   end
@@ -111,32 +108,38 @@ def parse_exponent(input)
   n = input.shift
   
   unless n.type == :number
-    p n
-    raise "Syntax error: expecting number!"
+    raise "Syntax error, expecting number, got #{n.type}"
   end
   
   exp = n.value
-  return exp if input.empty? || !$regops.include?(input[0])
+  return exp if input.empty?
   
-  e_op = input[0] # intended to pick up and eat ^ op
-  if !e_op || !$operators.include?(e_op.type)
-    raise "Syntax error: expecting operator, found #{e_op ? e_op.type : "nothing"}"
-  elsif input.empty? || input[0].type != :number
-    raise "Syntax error: expecting number, got #{input[0] ? input[0].type : "nothing"}"
-  # elsif $muldiv.include?(e_op.type) || $plusmin.include?(e_op.type)
-  #    return exp
-  # elsif e_op.type == :exp
-  #n_num = input.shift
- 
+  next_op = input.shift
+  n_num = input.shift
+  
+  if !$operators.include?(next_op.type) # must be a next op if input wasn't empty
+    raise "Syntax error, expecting operator"
+  elsif !n_num || n_num.type != :number
+    raise "Syntax error, expecting number"
+  elsif !$other_ops.include?(next_op.type) ## the default case, as it were
+    exp = exp ** n_num
+  elsif $regops.include?(next_op.type)
+    # send it back to parse_product, and up the tree as needed
+    # so, return the number
+    parse_exponent(input)
+  else
+    "This should never print"
   end
-  exp ** parse_exponent(input) # this fxn fully recursive IDEALLY
 end
 
 
 
 # code
+    
+    # infinite loop  
       
-tokens = lex_input("2+3*2*4 -6") 
+    
+tokens = lex_input("2+3*2*4^2 -6") 
 p tokens
 puts parse_sum(tokens)   
 
