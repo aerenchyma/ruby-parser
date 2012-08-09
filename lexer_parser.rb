@@ -1,3 +1,6 @@
+require 'rubygems'
+require 'pry'
+
 class Token < Struct.new(:type, :value)
   def inspect
     "[:#{type}, #{value || "nil"}]"
@@ -67,7 +70,7 @@ def parse_sum(input) # for sum
       sum -= parse_product(input)
     elsif $muldiv.include?(op.type)
       input.unshift(num) # hmm
-      sum += parse_product(input)
+      sum = parse_product(input)
     end
   end
   sum
@@ -78,7 +81,7 @@ def parse_product(input)
   n = input.shift
   
   unless n.type == :number
-    raise "Syntax error, expecting number, got #{input[0].type}"
+    raise "Syntax error, expecting number, got #{n.type}}"
   end
   
   product = n.value
@@ -92,15 +95,19 @@ def parse_product(input)
     elsif next_num.type != :number
       raise "Syntax error, expecting number, got #{next_num.type}"
     elsif n_op.type == :times
-      product *= parse_exponent(input.shift(2))
+      input.shift
+      product *= parse_exponent(input)
       
       # product *= next_num.value
       #      input.shift(2)
     elsif n_op.type == :div
-      product /= parse_exponent(input.shift(2))
+      input.shift
+      product /= parse_exponent(input)
       
       # product /= next_num.value
       #     input.shift(2)
+    else
+      product = parse_exponent(input)
     end
   end
   product
@@ -109,27 +116,39 @@ end
 
 def parse_exponent(input)
   n = input.shift
-  n_op = input.shift
+
   
   unless n.type == :number
-    raise "Syntax error: expecting number, got #{n : n.type ? "nothing"}"
+    raise "Syntax error: expecting number, got #{n.type}"
   end
-  
-  return exp if (input.empty? || $regops.include?(n_op.type))
-  
-  if 
-  
+  exp = n.value
+  #return exp if (input.empty? || $regops.include?(n_op.type))
+  return exp if input.empty?
+  n_op = input.shift
+  if !$operators.include?(n_op.type)
+    raise "Syntax error: expecting operator, got #{n_op.type}"
+  elsif $other_ops.include?(n_op.type)
+    exp = exp ** input.shift.value
+  elsif $plusmin.include?(n_op.type)
+    input.unshift(n_op, n)
+    exp = parse_sum(input)
+  elsif $muldiv.include?(n_op.type)
+    input.unshift(n_op, n)
+    exp = parse_product(input)
+  end
+  puts "finally, #{input}"
+  parse_exponent(input)
 end
 
 
 
 # code
     
-    # infinite loop  
       
     
 tokens = lex_input("2+3*2 *4 -6") 
-p tokens
+#p tokens
+#binding.pry
 puts parse_sum(tokens)   
 
 
