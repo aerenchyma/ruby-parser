@@ -130,7 +130,6 @@ def parse_exponent(input)
     exp = exp ** input.shift.value
   # should not get here if it's not an exponent operator
   end
-  puts "finally, #{input}"
   parse_exponent(input)
 end
 
