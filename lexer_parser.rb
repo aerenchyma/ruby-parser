@@ -139,13 +139,17 @@ end
     
       
     
-tokens = lex_input("2+3*2 -6") 
+tokens = lex_input("2+3^2*2 -6") 
 #p tokens
 #binding.pry
 puts parse_sum(tokens)   
 
 
+
+
 ### GRAMMAR
+##----------
 ## sum: product {('+' | '-') product}*
-## product: NUM {('*'|'/') NUM}*
+## product: exp {('*'|'/') exp}*
+## exp:  NUM {^ NUM}*
     
