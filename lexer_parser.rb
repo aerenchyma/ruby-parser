@@ -115,26 +115,29 @@ end
 
 
 def parse_exponent(input)
-  n = input.shift
+  n = input[0]
 
   
   unless n.type == :number
     raise "Syntax error: expecting number, got #{n.type}"
   end
+  input.shift
   exp = n.value
   #return exp if (input.empty? || $regops.include?(n_op.type))
-  return exp if input.empty?
+  return exp if input.empty? || ($operators.include?(input[0].type) && !$other_ops.include?(input[0].type) )
   n_op = input.shift
   if !$operators.include?(n_op.type)
     raise "Syntax error: expecting operator, got #{n_op.type}"
   elsif $other_ops.include?(n_op.type)
     exp = exp ** input.shift.value
-  elsif $plusmin.include?(n_op.type)
-    input.unshift(n_op, n)
-    exp = parse_sum(input)
-  elsif $muldiv.include?(n_op.type)
-    input.unshift(n_op, n)
-    exp = parse_product(input)
+  elsif $regops.include?(n_op.type)
+    
+  # elsif $plusmin.include?(n_op.type)
+  #   input.unshift(n_op,n)
+  #   exp = parse_sum(input)
+  # elsif $muldiv.include?(n_op.type)
+  #   input.unshift(n_op,n)
+  #   exp = parse_product(input)
   end
   puts "finally, #{input}"
   parse_exponent(input)
@@ -146,7 +149,7 @@ end
     
       
     
-tokens = lex_input("2+3*2 *4 -6") 
+tokens = lex_input("2+3*2 -6") 
 #p tokens
 #binding.pry
 puts parse_sum(tokens)   
